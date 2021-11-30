@@ -8,7 +8,14 @@
 
 {% block navbar %}
     <nav class="navbar navbar-default">
-    This is where the nav bar will be
+    <ul>
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('post') }}">Post</a></li>
+        <li><a href="{{ url_for('browse') }}">Browse</a></li>
+        <li><a href="{{ url_for('post') }}">Post</a></li>
+        <li><a href="{{ url_for('register') }}">Register</a></li>
+        <li><a href="{{ url_for('login') }}">Login</a></li>
+    </ul>
     </nav>
 {% endblock %}
 
