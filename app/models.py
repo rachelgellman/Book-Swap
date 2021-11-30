@@ -25,3 +25,7 @@ def load_user(id):
 class Books(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     isbn = db.Column(db.Integer)
+    name = db.Column(db.String(64))
+    author = db.Column(db.String(128))
+    description = db.Column(db.String(5000))
+    cover_url = db.Column(db.String(128))
