@@ -40,4 +40,6 @@ app.db
 microblog.log*
 logs
 
+secret.py
+
 flask
