@@ -1,6 +1,7 @@
 from app import app
-from flask import render_template
-
+from flask import render_template, flash, redirect, url_for, request
+from app.forms import SearchForm
+from app.isbndb_request import ISBNDB
 
 @app.route('/')
 def index():
@@ -31,7 +32,10 @@ def browse():
 def post():
     return render_template('post.html')
 
-@app.route('/search')
+@app.route('/search', methods=['GET','POST'])
 def search():
-    form =
-    return render_template('search.html')
+    form = SearchForm()
+    if form.validate_on_submit():
+        print(form.searchTerm.data)
+        ISBNDB.query_isbndb(form.searchTerm.data)
+    return render_template('search.html', form = form)
