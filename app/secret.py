@@ -1,1 +1,0 @@
-isbndb_key = "ADD ISBNDB AUTHORIZATION KEY HERE"
