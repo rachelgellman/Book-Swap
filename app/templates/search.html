@@ -8,10 +8,6 @@
             {{ wtf.quick_form(form) }}
         </div>
     </div>
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-
-    <p>
-        {{ form.searchTerm.label }}
-
+    {% block book_content %}
+    {% endblock %}
 {% endblock %}

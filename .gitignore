@@ -35,6 +35,8 @@ nosetests.xml
 .project
 .pydevproject
 
+migrations
+
 venv
 app.db
 microblog.log*

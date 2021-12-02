@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h2>{{ book.name }}</h2>
+<h>{{ book.author }}</h>
+<p><img src = "{{book.cover_url}}"></p>
+<p><b>Description:</b><br>{{book.description}}</p>
+{%endblock%}

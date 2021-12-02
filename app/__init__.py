@@ -9,6 +9,7 @@ from flask_bootstrap import Bootstrap
 from config import Config
 
 app = Flask(__name__)
+app.debug = True
 bootstrap = Bootstrap(app)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
