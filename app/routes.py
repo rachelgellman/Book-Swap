@@ -59,12 +59,13 @@ def logout():
 
 @app.route('/browse')
 def browse():
-    return render_template('browse.html')
+    listings = Listings.query.all()
+    return render_template('browse.html', listings = listings)
 
 
-@app.route('/post')
+@app.route('/post', methods=['GET','POST'])
 @login_required
-def post():
+def post_search():
     form = SearchForm()
     if form.validate_on_submit():
         results = ISBNDB.query_isbndb(form.searchTerm.data, 1, 1000)
@@ -90,13 +91,50 @@ def post():
                 results = ISBNDB.query_isbndb(form.searchTerm.data, i, 1000)
         db.session.add_all(books.values())
         db.session.commit()
-    return render_template('post.html', form = form)
+        return render_template('post_with_books.html', form = form, books = Books.query.filter(Books.name.contains(form.searchTerm.data)).all())
+    return render_template('search.html', form = form)
+
+@app.route('/post/<isbn>', methods=['GET','POST'])
+def post(isbn):
+    b = Books.query.filter_by(isbn = isbn).first()
+    if b is None:
+        book = ISBNDB.query_by_isbn(isbn)
+        if book == None:
+            return render_template('book_not_found.html')
+        book = book['book']
+        b = Books(isbn = book['isbn13'],
+            name = book['title'],
+            author = ', '.join(book.get('authors', 'N/A')),
+            description = book.get('synopsys', 'N/A'),
+            cover_url = book['image'])
+        db.session.add(b)
+        db.session.commit()
+    form = ButtonForm()
+    form.submit.label.text = 'Post'
+    if form.validate_on_submit():
+        l = Listings(bid = b.id, uid = current_user.id, state = 'active')
+        db.session.add(l)
+        db.session.commit()
+        current_user.listings.append(l)
+        b.listings.append(l)
+
+    return render_template('post.html', book = b, form = form)
 
 @app.route('/book/<isbn>')
 def book(isbn):
     b = Books.query.filter_by(isbn = isbn).first()
     if b is None:
-        return render_template('book_not_found.html')
+        book = ISBNDB.query_by_isbn(isbn)
+        if book == None:
+            return render_template('book_not_found.html')
+        book = book['book']
+        b = Books(isbn = book['isbn13'],
+            name = book['title'],
+            author = ', '.join(book.get('authors', 'N/A')),
+            description = book.get('synopsys', 'N/A'),
+            cover_url = book['image'])
+        db.session.add(b)
+        db.session.commit()
     return render_template('book.html', book = b)
 
 @app.route('/search', methods=['GET','POST'])

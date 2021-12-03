@@ -1,1 +1,8 @@
-{% extends "under_construction.html" %}
+{% extends "base.html" %}
+
+{% block app_content %}
+<h1>Listings</h1>
+{%for listing in listings%}
+<p><a href="{{ url_for('book', isbn = listing.book.isbn)}}">{{ listing.book.name }}</a> <img src="{{ listing.book.cover_url }}"><br> Posted By: {{ listing.user.username }}</p>
+{%endfor%}
+{% endblock %}

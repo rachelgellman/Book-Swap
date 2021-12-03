@@ -15,6 +15,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
 
     b_history = db.relationship('Books', secondary = history, backref = 'user')
+    listings = db.relationship('Listings', backref='user')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -44,3 +45,4 @@ class Books(db.Model):
     author = db.Column(db.String(500))
     description = db.Column(db.String(5000))
     cover_url = db.Column(db.String(128))
+    listings = db.relationship('Listings', backref='book')

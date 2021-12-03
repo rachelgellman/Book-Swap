@@ -10,7 +10,7 @@
     <nav class="navbar navbar-default">
     <ul>
         <li><a href="{{ url_for('index') }}">Home</a></li>
-        <li><a href="{{ url_for('post') }}">Post</a></li>
+        <li><a href="{{ url_for('post_search') }}">Post</a></li>
         <li><a href="{{ url_for('browse') }}">Browse</a></li>
         <li><a href="{{ url_for('search') }}">Search</a></li>
         {% if current_user.is_anonymous %}

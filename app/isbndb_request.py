@@ -12,3 +12,12 @@ class ISBNDB():
         print("isbdb query status code: " + str(r.status_code))
         return r.json()
         #print(r.json()['books'])
+    def query_by_isbn(isbn):
+        url = 'https://api2.isbndb.com/book/{0}'.format(isbn)
+        header = {'Authorization': isbndb_key,
+        'Accept': 'application/json'}
+        r = requests.get(url, headers = header)
+        print("get by isbn query status code: " + str(r.status_code))
+        if str(r.status_code) == '404':
+            return None
+        return r.json()

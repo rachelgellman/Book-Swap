@@ -1,0 +1,6 @@
+{% extends "search.html" %}
+{% block book_content %}
+{%for book in books%}
+<p><a href="{{ url_for('post', isbn = book.isbn)}}">{{ book.name }}</a> <img src="{{ book.cover_url }}"></p>
+{%endfor%}
+{% endblock %}
