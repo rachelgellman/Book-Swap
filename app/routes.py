@@ -117,6 +117,7 @@ def post(isbn):
         db.session.commit()
         current_user.listings.append(l)
         b.listings.append(l)
+        return redirect(url_for('browse'))
 
     return render_template('post.html', book = b, form = form)
 
