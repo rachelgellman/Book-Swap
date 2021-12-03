@@ -2,9 +2,11 @@ from app import app, db
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
-from app.forms import SearchForm, LoginForm, RegistrationForm
+from app.forms import SearchForm, LoginForm, RegistrationForm, ButtonForm
 from app.isbndb_request import ISBNDB
 from app.models import User, Listings, Books
+from app.secret import admin_pass
+import time, math
 
 @app.route('/')
 def index():
@@ -63,7 +65,32 @@ def browse():
 @app.route('/post')
 @login_required
 def post():
-    return render_template('post.html')
+    form = SearchForm()
+    if form.validate_on_submit():
+        results = ISBNDB.query_isbndb(form.searchTerm.data, 1, 1000)
+        if results['total'] == 0:
+            flask("No Books with name {}".format(form.searchTerm.data))
+            return redirect(url_for('post'))
+        pages = math.ceil(results['total']/ 1000)
+        flash("" + str(results['total']) + " results")
+        books = {}
+        i = 1
+        while i <= pages:
+            for book in results['books']:
+                if Books.query.filter_by(isbn = book.get('isbn13', -1)).first() is None and not book.get('isbn13', -1) in books.keys():
+                    b = Books(isbn = book['isbn13'],
+                        name = book['title'],
+                        author = ', '.join(book.get('authors', 'N/A')),
+                        description = book.get('synopsys', 'N/A'),
+                        cover_url = book['image'])
+                    books[book['isbn13']] = b
+            i += 1
+            if i <= pages:
+                time.sleep(1)
+                results = ISBNDB.query_isbndb(form.searchTerm.data, i, 1000)
+        db.session.add_all(books.values())
+        db.session.commit()
+    return render_template('post.html', form = form)
 
 @app.route('/book/<isbn>')
 def book(isbn):
@@ -73,19 +100,55 @@ def book(isbn):
     return render_template('book.html', book = b)
 
 @app.route('/search', methods=['GET','POST'])
+@login_required
 def search():
     form = SearchForm()
     if form.validate_on_submit():
-        results = ISBNDB.query_isbndb(form.searchTerm.data)
+        if current_user.username != 'admin':
+            flash("Must Be Admin")
+            return redirect(url_for('index'))
+        results = ISBNDB.query_isbndb(form.searchTerm.data, 1, 1000)
+        if results['total'] == 0:
+            flask("No Books with name {}".format(form.searchTerm.data))
+            return redirect(url_for('search'))
+        pages = math.ceil(results['total']/ 1000)
         flash("" + str(results['total']) + " results")
-        for book in results['books']:
-            if Books.query.filter_by(isbn = book['isbn13']).first() is None:
-                b = Books(isbn = book['isbn13'],
-                    name = book['title'],
-                    author = ', '.join(book.get('authors', 'N/A')),
-                    description = book.get('synopsys', 'N/A'),
-                    cover_url = book['image'])
-                db.session.add(b)
+        books = {}
+        i = 1
+        while i <= pages:
+            for book in results['books']:
+                if Books.query.filter_by(isbn = book.get('isbn13', -1)).first() is None and not book.get('isbn13', -1) in books.keys():
+                    b = Books(isbn = book['isbn13'],
+                        name = book['title'],
+                        author = ', '.join(book.get('authors', 'N/A')),
+                        description = book.get('synopsys', 'N/A'),
+                        cover_url = book['image'])
+                    books[book['isbn13']] = b
+            i += 1
+            if i <= pages:
+                time.sleep(1)
+                results = ISBNDB.query_isbndb(form.searchTerm.data, i, 1000)
+        db.session.add_all(books.values())
         db.session.commit()
         return render_template('search_with_books.html', form = form, books = Books.query.filter(Books.name.contains(form.searchTerm.data)).all())
     return render_template('search.html', form = form)
+
+@app.route('/resetdb')
+@login_required
+def resetdb():
+    if current_user.username != 'admin':
+        flash("Must Be Admin")
+        return redirect(url_for('index'))
+    flash("Resetting database")
+    logout_user()
+    meta = db.metadata
+    for table in reversed(meta.sorted_tables):
+        print('Clear Table {}'.format(table))
+        db.session.execute(table.delete())
+    db.session.commit()
+    user = User(username='admin', email = 'swelsh3@ithaca.edu')
+    user.set_password(admin_pass)
+    book = Books(isbn = -1, name = '', author = '', description = 'N/A', cover_url = 'https://images.isbndb.com/covers/29/24/9780397312924.jpg')
+    db.session.add_all([user, book])
+    db.session.commit()
+    return redirect(url_for('index'))
