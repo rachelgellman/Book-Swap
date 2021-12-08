@@ -12,6 +12,12 @@ import time, math
 def index():
     return render_template('base.html')
 
+@app.route('/user/<id>')
+def user(id):
+    u = User.query.filter_by(username = id).first()
+    if u is None:
+        return render_template('404.html')
+    return render_template('user.html', user = u)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
