@@ -59,8 +59,26 @@ def logout():
 
 @app.route('/browse')
 def browse():
-    listings = Listings.query.all()
+    listings = Listings.query.filter_by(state = 'active').all()
     return render_template('browse.html', listings = listings)
+
+@app.route('/browse/<id>', methods=['GET','POST'])
+def book_listing(id):
+    l = Listings.query.filter_by(id = id).first()
+    if l is None or l.state == 'nonactive':
+        return render_template('book_not_found.html')
+    form = ButtonForm()
+    form.submit.label.text = 'Borrow'
+    if form.validate_on_submit():
+        if current_user.is_authenticated:
+            current_user.b_history.append(l.book)
+            l.state = 'nonactive'
+            db.session.commit()
+            return redirect(url_for('browse')) #Here is where you want to add a redirect to a confirmation page with a map if you want to do that.
+        else:
+            flash("Must Be Logged in to Borrow a Book")
+
+    return render_template('listing.html', book = l.book, form = form, user = l.user.username)
 
 
 @app.route('/post', methods=['GET','POST'])
@@ -95,6 +113,7 @@ def post_search():
     return render_template('search.html', form = form)
 
 @app.route('/post/<isbn>', methods=['GET','POST'])
+@login_required
 def post(isbn):
     b = Books.query.filter_by(isbn = isbn).first()
     if b is None:
