@@ -63,6 +63,42 @@ def browse():
     return render_template('browse.html', listings = listings)
 
 
+@app.route('/search_results', methods=["GET"])
+def search_results():
+    form = SearchForm()
+    q = request.args.get('q')
+    if q is None or len(q) == 0:
+        return redirect('post_search')
+
+    results = ISBNDB.query_isbndb(q, 1, 1000)
+    if results['total'] == 0:
+        flash("No Books with name {}".format(q))
+        return redirect(url_for('post'))
+    pages = 1 #math.ceil(results['total'] / 1000)
+    flash("" + str(results['total']) + " results")
+    books = {}
+    i = 1
+    while i <= pages:
+        for book in results['books']:
+            if Books.query.filter_by(isbn=book.get('isbn13', -1)).first() is None and not book.get('isbn13',
+                                                                                                   -1) in books.keys():
+                b = Books(isbn=book['isbn13'],
+                          name=book['title'],
+                          author=', '.join(book.get('authors', 'N/A')),
+                          description=book.get('synopsys', 'N/A'),
+                          cover_url=book['image'])
+                books[book['isbn13']] = b
+        i += 1
+        if i <= pages:
+            time.sleep(1)
+            results = ISBNDB.query_isbndb(q, i, 1000)
+    db.session.add_all(books.values())
+    db.session.commit()
+    books = Books.query.filter(Books.name.contains(q)).all()
+    return render_template('post_with_books.html', form=form,
+                           books=books)
+
+
 @app.route('/post', methods=['GET','POST'])
 @login_required
 def post_search():
@@ -70,7 +106,7 @@ def post_search():
     if form.validate_on_submit():
         results = ISBNDB.query_isbndb(form.searchTerm.data, 1, 1000)
         if results['total'] == 0:
-            flask("No Books with name {}".format(form.searchTerm.data))
+            flash("No Books with name {}".format(form.searchTerm.data))
             return redirect(url_for('post'))
         pages = math.ceil(results['total']/ 1000)
         flash("" + str(results['total']) + " results")

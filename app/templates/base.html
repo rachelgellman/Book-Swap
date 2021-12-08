@@ -6,22 +6,50 @@
 {% endblock %}
 
 
-{% block navbar %}
-    <nav class="navbar navbar-default">
-    <ul>
-        <li><a href="{{ url_for('index') }}">Home</a></li>
-        <li><a href="{{ url_for('post_search') }}">Post</a></li>
-        <li><a href="{{ url_for('browse') }}">Browse</a></li>
-        <li><a href="{{ url_for('search') }}">Search</a></li>
-        {% if current_user.is_anonymous %}
-        <li><a href="{{ url_for('register') }}">Register</a></li>
-        <li><a href="{{ url_for('login') }}">Login</a></li>
-        {% else %}
-        <li><a href="{{ url_for('logout') }}"> Logout</a></li>
-        {% endif %}
 
-    </ul>
-    </nav>
+
+{% block navbar %}
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="{{ url_for('index') }}">Book Swap</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class=""><a href="{{ url_for('post_search') }}">Post<span class="sr-only">(current)</span></a></li>
+        <li class=""><a href="{{ url_for('browse') }}">Browse</a></li>
+
+          </ul>
+        </li>
+      </ul>
+      <form class="navbar-form navbar-left" action="{{ url_for("search_results") }}">
+        <div class="form-group">
+          <input id="q" name="q" type="text" class="form-control" placeholder="Search">
+        </div>
+          <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+      <ul class="nav navbar-nav navbar-right">
+        {% if current_user.is_anonymous %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+              <li class="nav-item, active"><a class="nav-link" href="{{ url_for('register') }}">Sign up</a></li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}"> Logout</a></li>
+        {% endif %}
+          </ul>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
 {% endblock %}
 
 
