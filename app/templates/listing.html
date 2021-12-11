@@ -9,4 +9,12 @@
         </div>
     </div>
     <div><br></div>
+    {% if current_user.username == user %}
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form2) }}
+        </div>
+    </div>
+    {% endif %}
+    <div><br></div>
 {% endblock %}
