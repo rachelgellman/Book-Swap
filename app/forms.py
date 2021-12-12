@@ -8,6 +8,7 @@ class SearchForm (FlaskForm):
     submit = SubmitField('Submit')
 
 class ButtonForm (FlaskForm):
+    takedown = BooleanField("Takedown Posting?")
     submit = SubmitField('Insert Title')
 
 class LoginForm(FlaskForm):

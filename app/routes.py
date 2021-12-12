@@ -76,19 +76,21 @@ def book_listing(id):
         return render_template('book_not_found.html')
     form = ButtonForm()
     form.submit.label.text = 'Borrow'
-    form_user = ButtonForm()
-    form_user.submit.label.text = 'Remove Listing'
-    if form_user.validate_on_submit():
+    if current_user.is_authenticated:
         if current_user.username == l.user.username:
-            l.state = 'nonactive'
-            db.session.commit()
-            flash("Listing taken down")
-            return redirect(url_for('browse'))
-        flash("Cannot take down posting that is not your own")
+            form.submit.label.text = 'Remove Listing'
+    if form.submit.label.text == 'Borrow':
+        del form.takedown
+
     if form.validate_on_submit():
         if current_user.is_authenticated:
             if current_user.username == l.user.username:
-                flash("Cannot Borrow Your Own Book")
+                if form.takedown.data:
+                    l.state = 'nonactive'
+                    db.session.commit()
+                    flash("Took Down Listing")
+                    return redirect(url_for('browse'))
+                flash("Please check verifacation box")
                 return redirect(url_for('browse', id = id))
             current_user.b_history.append(l.book)
             l.state = 'nonactive'
@@ -97,12 +99,14 @@ def book_listing(id):
         else:
             flash("Must Be Logged in to Borrow a Book")
 
-    return render_template('listing.html', book = l.book, form = form, user = l.user.username, form2 = form_user)
+    return render_template('listing.html', book = l.book, form = form, user = l.user.username)
 
 
 @app.route('/search_results', methods=["GET"])
 def search_results():
     form = SearchForm()
+    del form.submit
+    del form.searchTerm
     q = request.args.get('q')
     if q is None or len(q) == 0:
         return redirect('post_search')
@@ -110,9 +114,12 @@ def search_results():
     blist = f_cache.get(q)
     if blist is None:
         results = ISBNDB.query_isbndb(q, 1, 1000)
+        if results == None:
+            flash("Search Error")
+            return redirect(url_for('post_search'))
         if results['total'] == 0:
             flash("No Books with name {}".format(q))
-            return redirect(url_for('post'))
+            return redirect(url_for('post_search'))
         flash("" + str(results['total']) + " results")
         books = {}
         for book in results['books']:
@@ -144,6 +151,9 @@ def post_search():
         blist = f_cache.get(form.searchTerm.data)
         if blist is None:
             results = ISBNDB.query_isbndb(form.searchTerm.data, 1, 1000)
+            if results == None:
+                flash("Search Error")
+                return redirect(url_for('post_search'))
             if results['total'] == 0:
                 flash("No Books with name {}".format(form.searchTerm.data))
                 return redirect(url_for('post'))
@@ -187,6 +197,7 @@ def post(isbn):
         db.session.commit()
     form = ButtonForm()
     form.submit.label.text = 'Post'
+    del form.takedown
     if form.validate_on_submit():
         l = Listings(bid = b.id, uid = current_user.id, state = 'active')
         db.session.add(l)
