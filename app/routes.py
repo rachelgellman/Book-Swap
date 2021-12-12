@@ -113,7 +113,7 @@ def search_results():
 
     blist = f_cache.get(q)
     if blist is None:
-        results = ISBNDB.query_isbndb(q, 1, 1000)
+        results = ISBNDB.query_isbndb(q, 1, 100)
         if results == None:
             flash("Search Error")
             return redirect(url_for('post_search'))

@@ -2,7 +2,19 @@
 
 {% block app_content %}
 <h1>Listings</h1>
-{%for listing in listings%}
-<p><a href="{{ url_for('book_listing', id = listing.id)}}">{{ listing.book.name }}</a> <img src="{{ listing.book.cover_url }}"><br> Posted By: {{ listing.user.username }}</p>
-{%endfor%}
+
+
+
+    <table class="table table-hover">
+        {%for listing in listings%}
+            <tr>
+                <td>
+                    <h3> <a href="{{ url_for('book_listing', id = listing.id)}}">{{ listing.book.name }}</a></h3>
+                </td>
+            <td>
+                <img src="{{ listing.book.cover_url }}" height="200"><br> Posted by: {{ listing.user.username }} <br>
+            </td>
+            </tr>
+    {%endfor%}
+    </table>
 {% endblock %}

@@ -2,18 +2,30 @@
 
 {% block app_content %}
 <h2>{{ user.username }}</h2>
-<h><b>Postings:</b></h>
-{% for listing in user.listings %}
-{% if listing.state == "active" %}
-<p><a href="{{ url_for('book_listing', id = listing.id)}}">{{ listing.book.name }}</a></p>
-{% endif %}
-{% endfor %}
-{% if current_user.username == user.username %}
-<h><b>History:</b></h>
-{% for book in user.b_history %}
-<p><a href="{{ url_for('book', isbn = book.isbn)}}">{{ book.name }}</a></p>
-{% endfor %}
-{% endif %}
 
+
+
+    <table class="table table-hover">
+
+    <tr>
+        <td>
+            <h><b>Postings:</b></h> <br> <br>
+            {% for listing in user.listings %}
+            {% if listing.state == "active" %}
+            <p><a href="{{ url_for('book_listing', id = listing.id)}}">{{ listing.book.name }}</a></p>
+            {% endif %}
+            {% endfor %}
+        </td>
+        <td>
+            {% if current_user.username == user.username %}
+            <h><b>History:</b></h> <br> <br>
+            {% for book in user.b_history %}
+            <p><a href="{{ url_for('book', isbn = book.isbn)}}">{{ book.name }}</a></p>
+            {% endfor %}
+            {% endif %}
+        </td>
+    </tr>
+
+    </table>
 
 {% endblock %}
